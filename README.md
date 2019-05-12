@@ -2,7 +2,6 @@
 This is a TensorFlow implementation of our ASU-Net. We train Multi-scale U-Net model first, and then the ASU-Net.
 For more details, check our paper. (Link coming soon)
 
-The implementation is largely based on the reference code provided by the authors of the paper [link](https://github.com/shelhamer/fcn.berkeleyvision.org).
 1. [Prerequisites](#prerequisites)
 2. [Dataset](#dataset)
 3. [Training](#training)
