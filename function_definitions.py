@@ -192,6 +192,135 @@ def mode_visualize(sess, FLAGS, TEST_DIR, validation_dataset_reader, pred_annota
     EvalMetrics.show_result(total_cm, NUM_OF_CLASSES)
 
 
+def mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES):
+    if not os.path.exists(VIS_DIR):
+        os.makedirs(VIS_DIR)
+
+    valid_images, valid_annotations = validation_dataset_reader.get_random_batch(
+        FLAGS.batch_size)
+
+    score_att_x_100 = tf.expand_dims(tf.argmax(score_att_x_100, dimension=3), dim=3)
+    score_att_x_075 = tf.expand_dims(tf.argmax(score_att_x_075, dimension=3), dim=3)
+    score_att_x_125 = tf.expand_dims(tf.argmax(score_att_x_125, dimension=3), dim=3)
+
+    pred, pred100, pred075, pred125, score100, score075, score125 = sess.run([pred_annotation_test_attention, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125],
+                                                                             feed_dict={image: valid_images, annotation: valid_annotations, keep_probability: 1.0})
+
+    valid_annotations = np.squeeze(valid_annotations, axis=3)
+    pred = np.squeeze(pred, axis=3)
+    pred100 = np.squeeze(pred100, axis=3)
+    pred075 = np.squeeze(pred075, axis=3)
+    pred125 = np.squeeze(pred125, axis=3)
+    score100 = np.squeeze(score100, axis=3)
+    score075 = np.squeeze(score075, axis=3)
+    score125 = np.squeeze(score125, axis=3)
+
+    crossMats = list()
+
+    for itr in range(FLAGS.batch_size):
+
+        fig = plt.figure()
+        pos = 240 + 1
+        plt.subplot(pos)
+        plt.imshow(valid_images[itr].astype(np.uint8))
+        plt.axis('off')
+        plt.title('Original')
+
+        pos = 240 + 2
+        plt.subplot(pos)
+        plt.imshow(
+            valid_annotations[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('GT')
+
+        pos = 240 + 3
+        plt.subplot(pos)
+        plt.imshow(
+            pred[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('Prediction')
+
+        pos = 240 + 4
+        plt.subplot(pos)
+        plt.imshow(
+            pred100[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('pred100')
+
+        pos = 240 + 5
+        plt.subplot(pos)
+        plt.imshow(
+            pred075[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('pred075')
+
+        pos = 240 + 6
+        plt.subplot(pos)
+        plt.imshow(
+            pred125[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('pred125')
+
+        plt.savefig(VIS_DIR + "resultSum_" +
+                    str(itr))
+        plt.close('all')
+
+        fig = plt.figure()
+        pos = 240 + 1
+        plt.subplot(pos)
+        plt.imshow(
+            score100[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('score100')
+
+        pos = 240 + 2
+        plt.subplot(pos)
+        plt.imshow(
+            score075[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('score075')
+
+        pos = 240 + 3
+        plt.subplot(pos)
+        plt.imshow(
+            score125[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('score125')
+
+        plt.savefig(VIS_DIR + "resultScore_" +
+                    str(itr))
+        plt.close('all')
+
+        print("Saved image: %d" % itr)
+
+        # Eval metrics for this image prediction
+        cm = EvalMetrics.calculate_confusion_matrix(
+            valid_annotations[itr].astype(
+                np.uint8), pred[itr].astype(
+                np.uint8), NUM_OF_CLASSES)
+        crossMats.append(cm)
+
+    print(">>> Prediction results:")
+    total_cm = np.sum(crossMats, axis=0)
+    EvalMetrics.show_result(total_cm, NUM_OF_CLASSES)
+
+
 def mode_train(sess, FLAGS, net, train_dataset_reader, validation_dataset_reader, train_records, pred_annotation, image, annotation, keep_probability, logits, train_op, loss, summary_op, summary_writer, saver, display_step=300):
     print(">>>>>>>>>>>>>>>>Train mode")
     start = time.time()
