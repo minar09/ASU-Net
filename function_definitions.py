@@ -192,18 +192,22 @@ def mode_visualize(sess, FLAGS, TEST_DIR, validation_dataset_reader, pred_annota
     EvalMetrics.show_result(total_cm, NUM_OF_CLASSES)
 
 
-def mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES):
+def mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, attn_output_test, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES):
     if not os.path.exists(VIS_DIR):
         os.makedirs(VIS_DIR)
 
     valid_images, valid_annotations = validation_dataset_reader.get_random_batch(
         FLAGS.batch_size)
 
-    score_att_x_100 = tf.expand_dims(tf.argmax(score_att_x_100, dimension=3), dim=3)
-    score_att_x_075 = tf.expand_dims(tf.argmax(score_att_x_075, dimension=3), dim=3)
-    score_att_x_125 = tf.expand_dims(tf.argmax(score_att_x_125, dimension=3), dim=3)
+    score_att_x_100 = tf.argmax(score_att_x_100, dimension=3)
+    score_att_x_075 = tf.argmax(score_att_x_075, dimension=3)
+    score_att_x_125 = tf.argmax(score_att_x_125, dimension=3)
 
-    pred, pred100, pred075, pred125, score100, score075, score125 = sess.run([pred_annotation_test_attention, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125],
+    attn_out_100 = attn_output_test[:, :, :, 0]
+    attn_out_075 = attn_output_test[:, :, :, 1]
+    attn_out_125 = attn_output_test[:, :, :, 2]
+
+    pred, pred100, pred075, pred125, score100, score075, score125, attn100, attn075, attn125 = sess.run([pred_annotation_test_attention, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, attn_out_100, attn_out_075, attn_out_125],
                                                                              feed_dict={image: valid_images, annotation: valid_annotations, keep_probability: 1.0})
 
     valid_annotations = np.squeeze(valid_annotations, axis=3)
@@ -211,9 +215,6 @@ def mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pr
     pred100 = np.squeeze(pred100, axis=3)
     pred075 = np.squeeze(pred075, axis=3)
     pred125 = np.squeeze(pred125, axis=3)
-    score100 = np.squeeze(score100, axis=3)
-    score075 = np.squeeze(score075, axis=3)
-    score125 = np.squeeze(score125, axis=3)
 
     crossMats = list()
 
@@ -279,13 +280,40 @@ def mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pr
         pos = 240 + 1
         plt.subplot(pos)
         plt.imshow(
+            attn100[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('Attention100')
+
+        pos = 240 + 2
+        plt.subplot(pos)
+        plt.imshow(
+            attn075[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('Attention075')
+
+        pos = 240 + 3
+        plt.subplot(pos)
+        plt.imshow(
+            attn125[itr].astype(
+                np.uint8),
+            cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
+        plt.axis('off')
+        plt.title('Attention125')
+
+        pos = 240 + 4
+        plt.subplot(pos)
+        plt.imshow(
             score100[itr].astype(
                 np.uint8),
             cmap=ListedColormap(label_colors_10k), norm=clothnorm_10k)
         plt.axis('off')
         plt.title('score100')
 
-        pos = 240 + 2
+        pos = 240 + 5
         plt.subplot(pos)
         plt.imshow(
             score075[itr].astype(
@@ -294,7 +322,7 @@ def mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pr
         plt.axis('off')
         plt.title('score075')
 
-        pos = 240 + 3
+        pos = 240 + 6
         plt.subplot(pos)
         plt.imshow(
             score125[itr].astype(

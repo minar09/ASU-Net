@@ -478,7 +478,7 @@ def main(argv=None):
     elif FLAGS.mode == "visualize":
 
         # fd.mode_visualize(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES)
-        fd.mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES)
+        fd.mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, attn_output_test, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES)
 
     # test-full-validation-dataset mode
     elif FLAGS.mode == "test":
