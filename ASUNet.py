@@ -28,8 +28,7 @@ if DATA_SET == "10k":
         "number of epochs for training")
     tf.flags.DEFINE_string("model_dir", "logs/UNetMSc_10k/",
                            "path to logs directory")
-    tf.flags.DEFINE_string("logs_dir", "logs/ASUNet_10k/",
-                           "path to logs directory")
+    tf.flags.DEFINE_string("logs_dir", "logs/ASUNet_10k/", "path to logs directory")
     tf.flags.DEFINE_string(
         "data_dir", "D:/Datasets/Dressup10k/", "path to dataset")
 
@@ -285,8 +284,7 @@ def main(argv=None):
 
         with tf.variable_scope('attention'):
             attn_output_train = attention(attn_input_train, is_training=True)
-            attention_scales_weights = tf.nn.softmax(
-                attn_output_train, axis=3)  # Add axis?
+            attention_scales_weights = tf.nn.softmax(attn_output_train)  # Add axis?
 
         score_att_x_100 = tf.multiply(logits100, tf.image.resize_images(tf.expand_dims(
             attention_scales_weights[:, :, :, 0], axis=3), tf.shape(logits100)[1:3, ]))
@@ -344,7 +342,8 @@ def main(argv=None):
 
         # 4. optimizing
         msc_trainable_var = tf.trainable_variables('inference')
-        attention_trainable_var = tf.trainable_variables('attention')
+        # attention_trainable_var = tf.trainable_variables('attention')
+        attention_trainable_var = tf.trainable_variables()
         if FLAGS.debug:
             for var in msc_trainable_var:
                 Utils.add_to_regularization_and_summary(var)
@@ -364,8 +363,7 @@ def main(argv=None):
 
         with tf.variable_scope('attention'):
             attn_output_test = attention(attn_input_test, is_training=False)
-            attention_scales_weights = tf.nn.softmax(
-                attn_output_test, axis=3)  # Add axis?
+            attention_scales_weights = tf.nn.softmax(attn_output_test)  # Add axis?
 
         score_att_x_100 = tf.multiply(logits100, tf.image.resize_images(
             tf.expand_dims(attention_scales_weights[:, :, :, 0], axis=3),
@@ -478,7 +476,7 @@ def main(argv=None):
     elif FLAGS.mode == "visualize":
 
         # fd.mode_visualize(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES)
-        fd.mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, attn_output_test, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES)
+        fd.mode_visualize_attention(sess, FLAGS, VIS_DIR, validation_dataset_reader, pred_annotation100, pred_annotation075, pred_annotation125, score_att_x_100, score_att_x_075, score_att_x_125, attention_scales_weights, pred_annotation_test_attention, image, annotation, keep_probability, NUM_OF_CLASSES)
 
     # test-full-validation-dataset mode
     elif FLAGS.mode == "test":
