@@ -24,7 +24,7 @@ if DATA_SET == "10k":
     tf.flags.DEFINE_integer("batch_size", "2", "batch size for training")
     tf.flags.DEFINE_integer(
         "training_epochs",
-        "20",
+        "3",
         "number of epochs for training")
     tf.flags.DEFINE_string("model_dir", "logs/UNetMSc_10k/",
                            "path to logs directory")
